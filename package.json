@@ -1,0 +1,19 @@
+{
+  "name": "e-shop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/index.js",
+    "dev": "SET NODE_ENV=DEVELOPMENT& nodemon backend/index.js",
+    "prod": "SET NODE_ENV=PRODUCTION& nodemon backend/index.js"
+  },
+  "author": "caesar",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1"
+  }
+}
