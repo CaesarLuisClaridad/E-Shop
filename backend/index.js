@@ -6,8 +6,16 @@ import { connectDatabase } from './config/connectDb.js';
 
 const app = express();
 
+//handle the uncaught exceptions 
+process.on("uncaughtException", (err) => {
+    console.log("Shutting down due to uncaught exceptions")
+    process.exit(1);
+})
+
+//for env
 dotenv.config({ path: "backend/config/config.env" });
 
+//to send json 
 app.use(express.json());
 
 //connection to DB
@@ -19,6 +27,15 @@ app.use("/api/v1/", productRoutes);
 //error middlware
 app.use(errorMiddleware);
 
-app.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT, () => {
     console.log(`Listening to port ${process.env.PORT}`);
 })
+
+//handle the unhandled promise rejection
+process.on("unhandledRejection", (err) => {
+    console.log("Shutting down due to the unhandled promise rejection")
+    server.close(() => {
+        process.exit(1);
+    });
+})
+
