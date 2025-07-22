@@ -1,7 +1,10 @@
-import express from 'express'
-import dotenv from 'dotenv'
+import express from 'express';
+import dotenv from 'dotenv';
 import errorMiddleware from './middleware/errors.js';
-import productRoutes from "./routes/product.js"
+
+import productRoutes from "./routes/product.js";
+import userRoutes from "./routes/user.js"
+
 import { connectDatabase } from './config/connectDb.js';
 
 const app = express();
@@ -23,6 +26,7 @@ connectDatabase();
 
 //routes
 app.use("/api/v1/", productRoutes);
+app.use("/api/v1", userRoutes);
 
 //error middlware
 app.use(errorMiddleware);
