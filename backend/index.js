@@ -6,6 +6,7 @@ import productRoutes from "./routes/product.js";
 import userRoutes from "./routes/user.js"
 
 import { connectDatabase } from './config/connectDb.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -20,6 +21,9 @@ dotenv.config({ path: "backend/config/config.env" });
 
 //to send json 
 app.use(express.json());
+
+//to work with cookies
+app.use(cookieParser());
 
 //connection to DB
 connectDatabase();
