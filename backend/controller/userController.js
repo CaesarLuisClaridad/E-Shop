@@ -63,3 +63,111 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
     message: "User logged out",
   });
 });
+
+// get current user profile => /api/v1/user
+export const getCurrentUser = catchAsyncError(async (req, res, next) => {
+  const user = await User.findById(req?.user_id);
+
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  res.status(200).json({
+    user,
+  });
+});
+
+// update passwrod => /api/v1/password/update
+export const updatePassword = catchAsyncError(async (req, res, next) => {
+  const user = await User.findByID(req?.user._id).select("+password");
+
+  const isPasswordMatch = await user.comparePassword(req.body.oldPassword);
+
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Old password is incorrect", 404));
+  }
+
+  user.password = req.body.password;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+//update profile => /api/v1/user/update_profile
+export const updateProfile = catchAsyncError(async (req, res, next) => {
+  // new data
+  const newUserData = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+
+  const user = await User.findByIdAndUpdate(req.user_id, newUserData, {
+    new: true,
+  });
+
+  res.status(200).json({
+    user,
+  });
+});
+
+
+// get all user - ADMIN - /api/v1/admin/users
+export const getAllUsers = catchAsyncError(async (req, res, next) => {
+  
+  const users = await User.find();
+
+  res.status(200).json({
+    users,
+  })
+})
+
+// find user by id - ADMIN - /api/v1/admin/users/:id
+export const getUserDetails = catchAsyncError( async(req, res , next) => {
+  const user = await User.findById(req?.params?.id);
+
+  if(!user){
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  res.status(200).json({
+    user,
+  })
+})
+
+//find user by id and update - ADMIN = /api/v1/admin/users/:id
+export const updateUser = catchAsyncError(async (req, res, next) => {
+  
+  // new user data
+  const newUserData = {
+    name: req?.body?.name,
+    email: req?.body?.email,
+    role: req?.body?.role,
+  }
+
+  const user = await User.findByIdAndUpdate(req?.user_id, newUserData, {new: true});
+
+  res.status(200).json({
+    user,
+  })
+})
+
+
+// delete user - ADMIN => /api/v1/admin/users/:id
+export const deleteUser = catchAsyncError( async(req, res, next) => {
+
+  const user = await User.findById(req?.params?.id);
+
+  if(!user){
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  await user.deleteOne();
+
+  res.status(200).json({
+    succes: true,
+  })
+})
+
