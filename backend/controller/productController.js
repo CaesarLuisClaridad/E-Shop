@@ -4,6 +4,9 @@ import ErrorHandler from "../utils/errorHandler.js";
 
 // create product => api/v1/product
 export const createProduct = catchAsyncError(async (req, res) => {
+  
+  req.body.user = req.user._id; //link the user who created this product by stroing the user id
+
   const product = await Product.create(req.body);
 
   res.status(200).json({
@@ -60,7 +63,7 @@ export const deleteProduct = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Error deleting this product", 404));
   }
 
-  await product.deteleOne();
+  await product.deleteOne();
 
   res.status(200).json({
     message: "Product deleted",
