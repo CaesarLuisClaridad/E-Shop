@@ -1,6 +1,7 @@
 import express from "express";
 import {
     deleteUser,
+  forgotPassword,
   getUserDetails,
   loginUser,
   logoutUser,
@@ -25,6 +26,8 @@ router
   .get(isAuthenticatedUser, authorizedRoles("admin"), getUserDetails)
   .put(isAuthenticatedUser, authorizedRoles("admin"), updateUser)
   .delete(isAuthenticatedUser, authorizedRoles("admin"), deleteUser)
+
+router.route("/password/forgot").post(forgotPassword);
 
 
 export default router;
