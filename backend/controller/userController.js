@@ -2,6 +2,8 @@ import catchAsyncError from "../middleware/catchAsyncError.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import User from "../model/user.js";
 import sendToken from "../utils/sendToken.js";
+import { getResetPasswordTemplate } from "../utils/emailTemplate.js";
+import sendEmail from "../utils/sendEmail.js";
 
 // register user = /api/v1/register
 export const registerUser = catchAsyncError(async (req, res, next) => {
@@ -171,3 +173,44 @@ export const deleteUser = catchAsyncError( async(req, res, next) => {
   })
 })
 
+
+//forgotPassword => /api/v1/password/reset
+export const forgotPassword = catchAsyncError(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new ErrorHandler("User not found with this email", 404));
+  }
+
+  // Get reset token from user model method
+  const resetToken = user.getResetPasswordToken();
+
+  // Save without running validation (because only reset fields are set)
+  await user.save({ validateBeforeSave: false });
+
+  // Reset password URL
+  const resetURL = `${process.env.FRONTEND_URL}/api/v1/password/reset/${resetToken}`;
+
+  // Email template
+  const message = getResetPasswordTemplate(user?.name, resetURL);
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset Request",
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email}`,
+    });
+  } catch (error) {
+    // If email fails, clear reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ErrorHandler(error?.message, 500));
+  }
+});
