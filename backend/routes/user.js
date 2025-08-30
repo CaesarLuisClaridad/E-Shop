@@ -6,6 +6,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resetPassword,
   updateProfile,
   updateUser,
 } from "../controller/userController.js";
@@ -28,6 +29,6 @@ router
   .delete(isAuthenticatedUser, authorizedRoles("admin"), deleteUser)
 
 router.route("/password/forgot").post(forgotPassword);
-
+router.route("/password/reset/:token").put(resetPassword);
 
 export default router;
