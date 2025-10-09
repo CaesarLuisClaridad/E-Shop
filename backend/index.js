@@ -4,9 +4,11 @@ import errorMiddleware from './middleware/errors.js';
 
 import productRoutes from "./routes/product.js";
 import userRoutes from "./routes/user.js"
+import orderRoutes from "./routes/order.js"
 
 import { connectDatabase } from './config/connectDb.js';
 import cookieParser from 'cookie-parser';
+import order from './model/order.js';
 
 const app = express();
 
@@ -31,6 +33,7 @@ connectDatabase();
 //routes
 app.use("/api/v1/", productRoutes);
 app.use("/api/v1", userRoutes);
+app.use("/api/v1", orderRoutes);
 
 //error middlware
 app.use(errorMiddleware);
