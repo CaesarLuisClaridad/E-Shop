@@ -1,6 +1,6 @@
-import catchAsyncError from "../middleware/catchAsyncError";
+import catchAsyncError from "../middleware/catchAsyncError.js";
 import ErrorHandler from "../utils/errorHandler.js";
-import Order from "../model/order";
+import Order from "../model/order.js";
 import Product from "../model/product.js";
 
 // Create order => /api/v1/order/new
@@ -21,7 +21,7 @@ export const createOrder = catchAsyncError(async (req, res, next) => {
     itemsPrice,
     shippingAmount,
     totalAmount,
-    user: req.user_id,
+    user: req.user._id,
     gcashPayment:
       paymentMethod === "GCASH"
         ? { receiptImage: req.body.receiptImage }
@@ -95,11 +95,25 @@ export const updateOrder = catchAsyncError(async (req, res, next) => {
   }
 
   if (order?.orderStatus === "Delivered") {
-    return next(new ErrorHandler("You have already delivered this order", 404));
+    return next(new ErrorHandler("You have already delivered this order", 400));
   }
 
-  //update product stocks
-  order?.orderItems?.forEach(async (item) => {
+  // Update GCASH payment status if provided
+  if (req.body.gcashPayment?.status) {
+    order.gcashPayment = order.gcashPayment || {};
+    order.gcashPayment.status = req.body.gcashPayment.status;
+  }
+
+  // Update order status if provided
+  if (req.body.status) {
+    order.orderStatus = req.body.status;
+    if (req.body.status === "Delivered") {
+      order.deliveredAt = Date.now();
+    }
+  }
+
+  // Update product stocks
+  for (const item of order.orderItems) {
     const product = await Product.findById(item?.product?.toString());
 
     if (!product) {
@@ -108,13 +122,12 @@ export const updateOrder = catchAsyncError(async (req, res, next) => {
 
     product.stock = product.stock - item.quantity;
     await product.save({ validateBeforeSave: false });
-  });
-
-  order.status = req.body.status;
-  order.deliveredAt = Date.now();
+  }
 
   await order.save();
+
   res.status(200).json({
     success: true,
+    order,
   });
 });
